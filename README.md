@@ -5,13 +5,13 @@ This project provides a vacation calendar where users can select a country and a
 #  Flow
 
 Frontend (User selects country + year)
-        ⬇
+        ->
 Backend (Check MongoDB for existing data)
-        ⬇
+        ->
 If Found ───────────▶ Return holidays from DB
-        ⬇
+        ->
 If Not Found ───────▶ Call Calendarific API
-        ⬇
+        ->
 Save new data in MongoDB
-        ⬇
+        ->
 Return holidays to frontend
