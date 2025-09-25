@@ -11,7 +11,7 @@ function getMonthDays(year, month) {
   return days;
 }
 
-// Countries list
+// Countries list (avl in the calendarific api)
 const countries = [
   { code: "US", name: "United States" },
   { code: "IN", name: "India" },
@@ -195,8 +195,8 @@ export function Calender() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-8">
-      {/* Sidebar */}
+    <div className="flex min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 p-8 border-2">
+      {/* Sidebar for buttons */}
       <div className="flex flex-col gap-8 w-80 p-6 rounded-3xl shadow-2xl bg-white sticky top-8 h-fit">
         <h2 className="text-3xl font-extrabold text-gray-700 mb-6 text-center">
           Controls
