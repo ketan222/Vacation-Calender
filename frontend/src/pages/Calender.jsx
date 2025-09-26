@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-
 // Utility to generate days of a month
 function getMonthDays(year, month) {
   const date = new Date(year, month, 1);
@@ -39,10 +38,28 @@ const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function Calender() {
   const [country, setCountry] = useState("US");
+  // const [countries, setCountries] = useState([]);
   const [year, setYear] = useState(2025);
+  const [vacationModeON, setVacationModeON] = useState(false);
   const [holidays, setHolidays] = useState([]);
   const [loading, setLoading] = useState(false);
   const [view, setView] = useState("monthly");
+
+  // useEffect(() => {
+  //   fetch(
+  //     `https://calendarific.com/api/v2/countries?api_key=vkzrXsNLmhnawSRMcNJdynETNtOjebqH`
+  //   )
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       const list = data.response.countries.map((c) => ({
+  //         code: c["iso-3166"],
+  //         name: c.country_name,
+  //         flag: c.flag_unicode,
+  //       }));
+  //       setCountries(list);
+  //     })
+  //     .catch((err) => console.error("Error fetching countries:", err));
+  // }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -58,11 +75,36 @@ export function Calender() {
   }, [country, year]);
 
   function isHoliday(date) {
+    /*
+    {
+      "name": "Republic Day",
+      "date": "2019-01-26"
+      }
+    console.log(holidays[0] + "++++++++++++");         
+    */
+
     for (let i = 0; i < holidays.length; i++) {
+      // console.log(date);
       const hDate = new Date(holidays[i].date);
       if (hDate.toDateString() === date.toDateString()) return holidays[i];
     }
     return null;
+  }
+
+  function isHolidayInWeek(week) {
+    for (let i = 0; i < week.length; i++) {
+      if (week[i] && isHoliday(week[i])) return true;
+    }
+    return false;
+  }
+
+  function chkConsecutiveHolidays(week) {
+    let a = week[0];
+    for (let i = 1; i < week.length; i++) {
+      if (a && isHoliday(a) && isHoliday(week[i])) return true;
+      a = week[i];
+    }
+    return false;
   }
 
   function renderMonthGrid(month) {
@@ -79,7 +121,7 @@ export function Calender() {
 
     return (
       <div>
-        <div className="grid grid-cols-7 text-center font-medium text-gray-500 mb-2">
+        <div className="grid grid-cols-7 text-center font-medium text-gray-500 mb-2 ">
           {dayNames.map((day) => (
             <div key={day}>{day}</div>
           ))}
@@ -91,14 +133,18 @@ export function Calender() {
             if (week[d] && isHoliday(week[d])) holidayCount++;
           }
           let bgColor = "bg-white";
+          console.log(chkConsecutiveHolidays(week));
           if (holidayCount === 1) bgColor = "bg-green-200";
-          else if (holidayCount >= 2) bgColor = "bg-green-400";
-
+          else if (chkConsecutiveHolidays(week)) {
+            // console.log("here");
+            bgColor = "bg-amber-400";
+          } else if (holidayCount >= 2) bgColor = "bg-green-400";
+          if (vacationModeON && !isHolidayInWeek(week)) return;
           return (
             <div
               key={idx}
               className={
-                "grid grid-cols-7 gap-2 mb-2 p-2 rounded-xl transition-colors duration-300 " +
+                "grid grid-cols-7 gap-2  mb-2 p-2 rounded-xl transition-colors duration-300 " +
                 bgColor
               }
             >
@@ -115,6 +161,7 @@ export function Calender() {
                         : "bg-white") +
                       (view === "quarterly" ? " h-10" : " h-16")
                     }
+                    // for the pop name (tooltip)
                     title={holiday ? holiday.name : ""}
                   >
                     {/* Show date normally, hide on hover if holiday */}
@@ -130,7 +177,7 @@ export function Calender() {
 
                     {/* Show holiday name only on hover in monthly view */}
                     {holiday && view === "monthly" && (
-                      <span className="hidden group-hover:block text-xs mt-1 text-white font-semibold text-center">
+                      <span className="hidden group-hover:block text-xs mt-1 text-bol text-white font-semibold text-center">
                         {holiday.name}
                       </span>
                     )}
@@ -148,7 +195,7 @@ export function Calender() {
     return (
       <div
         key={month}
-        className="mb-6 p-4 rounded-2xl shadow-lg bg-gradient-to-b from-white to-pink-50"
+        className="mb-6 p-4 rounded-2xl shadow-lg bg-gradient-to-b from-white to-pink-50 "
       >
         <h3 className="text-xl font-bold mb-3 text-center text-gray-800">
           {new Date(year, month).toLocaleString("default", { month: "long" })}
@@ -159,6 +206,7 @@ export function Calender() {
   }
 
   function renderQuarter(quarter, quarterIndex) {
+    // console.log(quarter + " " + quarterIndex);
     return (
       <div
         key={quarterIndex}
@@ -176,7 +224,7 @@ export function Calender() {
               <h3 className="text-xl font-bold mb-3 text-center text-gray-800">
                 {new Date(year, month).toLocaleString("default", {
                   month: "long",
-                })}
+                })}{" "}
               </h3>
               {renderMonthGrid(month)}
             </div>
@@ -235,7 +283,7 @@ export function Calender() {
             <button
               onClick={() => setView("monthly")}
               className={
-                "px-8 py-4 rounded-3xl shadow-xl transition text-lg font-extrabold " +
+                "px-8 py-1 rounded-3xl shadow-xl transition text-lg font-extrabold " +
                 (view === "monthly"
                   ? "bg-green-300 text-white"
                   : "bg-gray-100 text-gray-800 hover:bg-gray-200")
@@ -257,10 +305,20 @@ export function Calender() {
           </div>
         </div>
 
-        <div className="mt-8">
-          <h3 className="font-bold text-gray-700 text-lg mb-3 text-center">
-            Legend
-          </h3>
+        <div className="mt-2">
+          <div
+            onClick={() => {
+              setVacationModeON((prev) => !prev);
+            }}
+            className={`mb-5 px-8 py-4 rounded-3xl shadow-xl transition text-lg font-extrabold ${
+              vacationModeON
+                ? "bg-green-300 text-white"
+                : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+            }`}
+          >
+            Vacation Mode
+          </div>
+
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-red-500 rounded-xl shadow-lg"></div>
